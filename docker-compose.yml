@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # ── PostgreSQL : La Mémoire Permanente ──────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: arena10-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: arena10
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./arena10-backend/src/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis : La Mémoire Rapide & Temporaire ─────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: arena10-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+

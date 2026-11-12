@@ -1,0 +1,19 @@
+{
+  "usr_1794232979141_85474941": {
+    "id": "usr_1794232979141_85474941",
+    "email": "alex.dupont@arena10.com",
+    "name": "Alexandre Dupont",
+    "title": "Analyste Expert VIP",
+    "role": "user",
+    "createdAt": "2026-11-09T14:02:59.166Z",
+    "lastLogin": "2026-11-09T14:03:10.265Z",
+    "avatarColor": "#c084fc",
+    "favorites": {
+      "clubs": [],
+      "leagues": []
+    },
+    "settings": {},
+    "passwordHash": "b7535105677199f18d3af8a4ed69b591b2c45336edb2a2118bbb65d2af48e90806c968170980dc32cc32d5dcb29a008c28ff8090c64a82a428cb9473bfc80058",
+    "salt": "dae6646eae05f881d4224d1d055b49c9"
+  }
+}
