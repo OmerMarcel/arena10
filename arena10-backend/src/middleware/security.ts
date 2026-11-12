@@ -44,13 +44,12 @@ const allowedOrigins = [
 
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
-    // Autoriser les requêtes sans origin (Postman, curl en dev)
-    if (!origin && isDev) return callback(null, true)
-    if (!origin) return callback(new Error('Origin non autorisée'), false)
+    // Autoriser les requêtes sans origin (visite directe dans le navigateur, health check Render, curl)
+    if (!origin) return callback(null, true)
     
     if (
       allowedOrigins.includes(origin) ||
-      (origin && (origin.endsWith('.vercel.app') || origin.endsWith('arena10.games')))
+      (origin && (origin.endsWith('.vercel.app') || origin.endsWith('arena10.games') || origin.includes('onrender.com')))
     ) {
       return callback(null, true)
     }
@@ -154,7 +153,7 @@ export function errorHandler(
     requestId,
   })
 
-  if (err.message.includes('CORS')) {
+  if (err.message.includes('CORS') || err.message.includes('Origin')) {
     res.status(403).json({
       success: false,
       error: 'Accès refusé (CORS).',
