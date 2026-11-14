@@ -5785,6 +5785,11 @@ footer a { color: #8797ac; }
     gap: 20px;
   }
 
+  .content-page-body,
+  .schedule-layout {
+    width: 100%;
+  }
+
   .right-ad-rail {
     width: 100%;
     min-width: 0;
