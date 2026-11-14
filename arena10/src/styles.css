@@ -653,15 +653,19 @@ a { cursor: pointer; }
 .match-row.finished-row { opacity: 0.95; }
 .live-badge {
   position: absolute; top: 6px; left: 6px;
+  max-width: calc(100% - 12px);
   font-size: 7px; letter-spacing: 1px; font-weight: 700;
   color: #f06b7a; background: #d9112b22; padding: 2px 6px; border-radius: 3px;
-  display: flex; align-items: center; gap: 5px;
+  display: flex; align-items: center; gap: 5px; overflow: hidden;
+  white-space: nowrap; text-overflow: ellipsis;
 }
 .live-badge i { width: 5px; height: 5px; background: #e82d45; border-radius: 50%; animation: pulse 1s infinite; }
 .finished-badge {
   position: absolute; top: 6px; left: 6px;
+  max-width: calc(100% - 12px);
   font-size: 7px; color: var(--text3); font-weight: 700;
   background: rgba(255, 255, 255, 0.05); padding: 2px 5px; border-radius: 3px;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
 }
 .match-time { display: grid; gap: 4px; }
 .match-time b { font: 700 17px 'Barlow Condensed'; }
@@ -3231,14 +3235,51 @@ footer a { color: #8797ac; }
   .news-flash { grid-template-columns: repeat(2, 1fr); }
 }
 
+@media (max-width: 1800px) {
+  .schedule-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .selection-card {
+    margin-top: 15px;
+  }
+
+  .match-row {
+    grid-template-columns: 52px 90px minmax(110px, 1fr) 70px 72px 82px 44px;
+    gap: 6px;
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .team b {
+    max-width: 68px;
+  }
+
+  .league-cell {
+    min-width: 0;
+  }
+
+  .league-cell b,
+  .league-cell small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .odds-row {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+}
+
 @media (max-width: 1200px) {
   .sidebar { width: 220px; }
   .main { margin-left: 220px; width: calc(100% - 220px); }
   .match-row {
-    grid-template-columns: 50px 95px minmax(140px, 1fr) 75px 75px 85px 44px;
+    grid-template-columns: 48px 85px minmax(110px, 1fr) 64px 68px 74px 40px;
     gap: 6px; padding: 8px 10px;
   }
-  .schedule-layout { grid-template-columns: minmax(0, 1fr) 230px; }
+  .schedule-layout { grid-template-columns: minmax(0, 1fr); }
   .metrics { grid-template-columns: repeat(2, 1fr); }
   .featured-grid { grid-template-columns: repeat(2, 1fr); }
   .reco-cards { grid-template-columns: 1fr; }
