@@ -2,25 +2,24 @@
 // ARENA 10 — Page Vue d'ensemble (Hero + Métriques + Matchs vedettes)
 // ============================================================
 
-import { useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { lazy, Suspense } from 'react'
 import {
   ArrowRight, ArrowDownRight, CalendarDots as CalendarDays, Sparkle as Sparkles, Shield, Users,
   Trophy, Lightning as Zap, CaretRight as ChevronRight, Star, TrendUp as TrendingUp, Pulse as Activity
 } from '@phosphor-icons/react'
 import { useNews, formatRelativeTime }  from '../hooks/useNews'
 import { useMatches } from '../hooks/useMatches'
-import { PlayerScene, AnimControls, AnimMode } from './Player3D'
 import { Crest } from './Crest'
 import { formatTeamName } from '../utils/formatters'
+
+const HeroPlayer = lazy(() => import('./HeroPlayer').then(m => ({ default: m.HeroPlayer })))
 
 export function OverviewPage({ onNav, selected, onToggle }: {
   onNav: (page: string) => void
   selected: number[]
   onToggle: (id: number) => void
 }) {
-  const [animMode, setAnimMode] = useState<AnimMode>('idle')
-  const { matches } = useMatches()
+  const { matches, error: matchesError, reload: reloadMatches } = useMatches()
   const liveMatch  = matches.find(m => m.status === 'live')
   const topMatches = matches.filter(m => m.status === 'upcoming').slice(0, 4)
   const leaguesCount = new Set(matches.map(m => m.league)).size
@@ -32,6 +31,12 @@ export function OverviewPage({ onNav, selected, onToggle }: {
 
   return (
     <div className="overview-page">
+      {matchesError && (
+        <div className="api-status-banner" role="status">
+          <span>{matchesError}</span>
+          <button type="button" onClick={reloadMatches}>Réessayer</button>
+        </div>
+      )}
       {/* ══ HERO ══════════════════════════════════════════════════ */}
       <section className="hero-v2">
         <div className="hero-left">
@@ -78,13 +83,10 @@ export function OverviewPage({ onNav, selected, onToggle }: {
           <div className="visual-grid" />
           <div className="orbit orbit-one" />
           <div className="orbit orbit-two" />
-          <div className="player-stage-v2">
-            <Canvas camera={{ position: [0, 0.8, 4.2], fov: 42 }} shadows dpr={[1, 1.8]}>
-              <PlayerScene animMode={animMode} />
-            </Canvas>
-          </div>
+          <Suspense fallback={<div className="page-loading">Chargement du joueur…</div>}>
+            <HeroPlayer />
+          </Suspense>
           <div className="player-number-v2">10</div>
-          <AnimControls current={animMode} onChange={setAnimMode} />
           <div className="hero-tag">
             <span className="tag-dot" /> THE GAME NEVER STOPS
           </div>

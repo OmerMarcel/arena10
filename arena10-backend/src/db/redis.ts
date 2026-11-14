@@ -35,7 +35,7 @@ export async function initRedis(): Promise<boolean> {
       lazyConnect: true,
       maxRetriesPerRequest: 2,
       connectTimeout: 5000,
-      tls: isTls ? { rejectUnauthorized: false } : undefined,
+      tls: isTls ? { rejectUnauthorized: true } : undefined,
       retryStrategy: (times) => {
         if (times > 3) {
           logger.warn('[Redis] ⚠️ Trop de tentatives de reconnexion. Bascule temporaire sur le cache local.')

@@ -3,7 +3,7 @@
 // Auteur : ARENA 10 / Antigravity
 // ============================================================
 
-import { useState, useEffect } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import {
   House, CalendarDots, Lightning, ChartBar,
@@ -11,20 +11,20 @@ import {
   Star, Gear, ArrowRight, CaretDown as ChevronDown,
   Sun, Moon, UserCircle as UserIcon, SignOut, SignIn
 } from '@phosphor-icons/react'
-import { OverviewPage }     from './components/OverviewPage'
-import { SchedulePage }     from './components/SchedulePage'
-import { PronosticsPage }   from './components/PronosticsPage'
-import { ComparatorPage }   from './components/ComparatorPage'
-import { NotebookPage }     from './components/NotebookPage'
-import { PerformancePage }  from './components/PerformancePage'
-import { NewsPage }         from './components/NewsPage'
-import { FavoritesPage }    from './components/FavoritesPage'
-import { SettingsPage }     from './components/SettingsPage'
-import { Background3DPlayer } from './components/Background3DPlayer'
-import { GlobalVideoBg }     from './components/GlobalVideoBg'
-import { AuthModal }         from './components/AuthModal'
-import { RightSidebarAds }   from './components/ads/RightSidebarAds'
-import { MobileTopAd }       from './components/ads/MobileTopAd'
+const OverviewPage = lazy(() => import('./components/OverviewPage').then(m => ({ default: m.OverviewPage })))
+const SchedulePage = lazy(() => import('./components/SchedulePage').then(m => ({ default: m.SchedulePage })))
+const PronosticsPage = lazy(() => import('./components/PronosticsPage').then(m => ({ default: m.PronosticsPage })))
+const ComparatorPage = lazy(() => import('./components/ComparatorPage').then(m => ({ default: m.ComparatorPage })))
+const NotebookPage = lazy(() => import('./components/NotebookPage').then(m => ({ default: m.NotebookPage })))
+const PerformancePage = lazy(() => import('./components/PerformancePage').then(m => ({ default: m.PerformancePage })))
+const NewsPage = lazy(() => import('./components/NewsPage').then(m => ({ default: m.NewsPage })))
+const FavoritesPage = lazy(() => import('./components/FavoritesPage').then(m => ({ default: m.FavoritesPage })))
+const SettingsPage = lazy(() => import('./components/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const Background3DPlayer = lazy(() => import('./components/Background3DPlayer').then(m => ({ default: m.Background3DPlayer })))
+const GlobalVideoBg = lazy(() => import('./components/GlobalVideoBg').then(m => ({ default: m.GlobalVideoBg })))
+const AuthModal = lazy(() => import('./components/AuthModal').then(m => ({ default: m.AuthModal })))
+const RightSidebarAds = lazy(() => import('./components/ads/RightSidebarAds').then(m => ({ default: m.RightSidebarAds })))
+const MobileTopAd = lazy(() => import('./components/ads/MobileTopAd').then(m => ({ default: m.MobileTopAd })))
 import { AuthProvider, useAuth } from './context/AuthContext'
 import './styles.css'
 
@@ -37,6 +37,16 @@ const nav = [
   { label: 'Performances',    icon: Pulse },
   { label: 'Actualités',      icon: Fire,                badge: '8' },
 ]
+const defaultPage = 'Vue d\'ensemble'
+const pageNames = new Set([...nav.map(item => item.label), 'Mes favoris', 'Paramètres'])
+function pageFromHash(): string {
+  try {
+    const hashPage = decodeURIComponent(window.location.hash.slice(1))
+    return pageNames.has(hashPage) ? hashPage : defaultPage
+  } catch {
+    return defaultPage
+  }
+}
 
 function Logo() {
   return (
@@ -52,7 +62,7 @@ function Logo() {
 
 function AppContent() {
   const { user, isAuthenticated, isLoading, logout, openModal } = useAuth()
-  const [active, setActive]       = useState('Vue d\'ensemble')
+  const [active, setActive]       = useState(pageFromHash)
   const [selected, setSelected]   = useState<number[]>([])
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -72,11 +82,21 @@ function AppContent() {
     } catch {}
   }, [theme])
 
+  useEffect(() => {
+    const onHashChange = () => {
+      setActive(pageFromHash())
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
+
   function toggle(id: number) {
     setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id])
   }
 
   function navigate(page: string) {
+    if (!pageNames.has(page)) return
+    window.location.hash = encodeURIComponent(page)
     setActive(page)
     setMobileOpen(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -85,7 +105,7 @@ function AppContent() {
   const displayName = user?.name || ''
   const displayTitle = user?.title || ''
   const displayInitial = (displayName || 'A').charAt(0).toUpperCase()
-  const avatarUrl = (user as any)?.avatarUrl as string | undefined
+  const avatarUrl = user?.avatarUrl
 
   function renderPage() {
     switch (active) {
@@ -105,13 +125,13 @@ function AppContent() {
   return (
     <div className="app-shell">
       {/* ══ FENÊTRE MODALE D'AUTHENTIFICATION (CONNEXION / INSCRIPTION) ══ */}
-      <AuthModal />
+      <Suspense fallback={null}><AuthModal /></Suspense>
 
       {/* ══ VIDÉO D'ARRIÈRE-PLAN GLOBALE (SUR TOUTES LES PAGES) ══ */}
-      <GlobalVideoBg />
+      <Suspense fallback={null}><GlobalVideoBg /></Suspense>
 
       {/* ══ ARRIÈRE-PLAN 3D DU JOUEUR (SUR TOUTES LES PAGES) ══ */}
-      <Background3DPlayer />
+      <Suspense fallback={null}><Background3DPlayer /></Suspense>
 
       {/* ══ SIDEBAR ════════════════════════════════════════════ */}
       <aside className={`sidebar${mobileOpen ? ' open' : ''}`}>
@@ -255,13 +275,13 @@ function AppContent() {
         </header>
 
         <div className="content">
-          {active !== 'Paramètres' && <MobileTopAd />}
+          {active !== 'Paramètres' && <Suspense fallback={null}><MobileTopAd /></Suspense>}
           <div className="content-layout-with-ads">
             <div className="content-page-body">
-              {renderPage()}
+              <Suspense fallback={<div className="page-loading" role="status">Chargement…</div>}>{renderPage()}</Suspense>
             </div>
             {active !== 'Paramètres' && (
-              <RightSidebarAds />
+              <Suspense fallback={null}><RightSidebarAds /></Suspense>
             )}
           </div>
         </div>

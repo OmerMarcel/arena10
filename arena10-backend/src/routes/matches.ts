@@ -12,6 +12,10 @@ const router = Router()
 // ── GET /api/matches/full ──────────────────────────────────────
 // Renvoie les fiches matchs complètes (avec stats, cotes et analyse IA)
 router.get('/full', async (req: Request, res: Response) => {
+  if (req.query.refresh !== undefined && !['true', 'false'].includes(String(req.query.refresh))) {
+    res.status(400).json({ success: false, error: 'Paramètre refresh invalide.', code: 400 })
+    return
+  }
   const forceRefresh = req.query.refresh === 'true'
   try {
     const { matches, source } = await getFullMatches(forceRefresh)

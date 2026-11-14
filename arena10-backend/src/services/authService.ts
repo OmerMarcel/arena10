@@ -115,6 +115,19 @@ function saveLocalBets(bets: Record<string, UserBet[]>): void {
   }
 }
 
+function saveLocalSession(token: string, sessionData: AuthSession): void {
+  ensureDataDir()
+  try {
+    const sessions = fs.existsSync(SESSIONS_FILE)
+      ? JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf-8'))
+      : {}
+    sessions[token] = sessionData
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), 'utf-8')
+  } catch (err) {
+    logger.error('[AuthService] Erreur écriture sessions.json:', err)
+  }
+}
+
 // ── 1. INSCRIPTION D'UN NOUVEL UTILISATEUR ────────────────────
 export async function registerUser(params: {
   name: string
@@ -197,9 +210,16 @@ export async function registerUser(params: {
     role: 'user',
     createdAt: nowIso
   }
+  const persistedSession: AuthSession = {
+    token,
+    userId: id,
+    createdAt: nowIso,
+    expiresAt: new Date(Date.now() + SESSION_TTL_MS).toISOString(),
+  }
 
   // Redis : Enregistrement ultra-rapide de la session active
   await setRedisSession(token, sessionData)
+  saveLocalSession(token, persistedSession)
 
   const safeProfile: UserProfile = {
     id,
@@ -287,9 +307,16 @@ export async function loginUser(email: string, password: string): Promise<{ user
     role: user.role,
     createdAt: nowIso
   }
+  const persistedSession: AuthSession = {
+    token,
+    userId: user.id,
+    createdAt: nowIso,
+    expiresAt: new Date(Date.now() + SESSION_TTL_MS).toISOString(),
+  }
 
   // Redis : Enregistrement de session temporaire rapide
   await setRedisSession(token, sessionData)
+  saveLocalSession(token, persistedSession)
 
   const fullProfile = await getUserFullProfile(user.id)
   if (fullProfile) {
@@ -325,8 +352,12 @@ export async function getUserByToken(token: string): Promise<UserProfile | null>
     try {
       const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf-8'))
       const localSess = sessions[token]
-      if (localSess && localSess.userId) {
+      if (localSess && localSess.userId && new Date(localSess.expiresAt).getTime() > Date.now()) {
         return await getUserFullProfile(localSess.userId)
+      }
+      if (localSess) {
+        delete sessions[token]
+        fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), 'utf-8')
       }
     } catch {}
   }
@@ -511,6 +542,15 @@ export async function getUserBets(userId: string): Promise<UserBet[]> {
 }
 
 export async function addUserBet(userId: string, bet: Omit<UserBet, 'id' | 'userId'>): Promise<UserBet> {
+  if (!bet.matchName?.trim() || bet.matchName.length > 160) {
+    throw new Error('Nom de match invalide.')
+  }
+  if (!Number.isFinite(bet.odds) || bet.odds < 1.01 || bet.odds > 1000) {
+    throw new Error('Cote invalide.')
+  }
+  if (!Number.isFinite(bet.stake) || bet.stake <= 0 || bet.stake > 100000) {
+    throw new Error('Mise invalide.')
+  }
   if (isPostgresConnected()) {
     const res = await query(
       `INSERT INTO user_bets (user_id, match_id, match_name, league, pick, odds, stake, result, profit, date)

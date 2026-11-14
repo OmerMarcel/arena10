@@ -36,7 +36,7 @@ export async function initPostgres(): Promise<boolean> {
     pool = new Pool({
       connectionString,
       ssl: connectionString.includes('sslmode=require') || connectionString.includes('neon.tech') || connectionString.includes('supabase')
-        ? { rejectUnauthorized: false }
+        ? { rejectUnauthorized: true }
         : false,
       max: 10,
       idleTimeoutMillis: 30000,

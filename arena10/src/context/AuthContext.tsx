@@ -77,7 +77,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Validation automatique du token stocké au démarrage de l'app (une seule fois)
   useEffect(() => {
     let cancelled = false
-    const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY)
+    let savedToken: string | null = null
+    try {
+      savedToken = localStorage.getItem(TOKEN_STORAGE_KEY)
+    } catch {
+      savedToken = null
+    }
 
     if (!savedToken) {
       setIsLoading(false)

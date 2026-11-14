@@ -61,6 +61,34 @@ body::-webkit-scrollbar {
 body {
   position: relative;
 }
+.page-loading {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  color: var(--text2);
+  font-size: 13px;
+}
+.api-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid #f8717166;
+  border-radius: var(--radius);
+  background: #7f1d1d33;
+  color: #fecaca;
+  font-size: 12px;
+}
+.api-status-banner button {
+  border: 1px solid #f87171;
+  border-radius: 5px;
+  padding: 5px 9px;
+  background: transparent;
+  color: #fecaca;
+  font-size: 11px;
+}
 button, input, select { font: inherit; cursor: pointer; }
 a { cursor: pointer; }
 

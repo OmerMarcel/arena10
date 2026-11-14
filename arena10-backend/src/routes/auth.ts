@@ -3,6 +3,7 @@
 // ============================================================
 
 import { Router, Request, Response } from 'express'
+import { body, param, validationResult } from 'express-validator'
 import {
   registerUser,
   loginUser,
@@ -25,7 +26,19 @@ function extractToken(req: Request): string | null {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     return authHeader.substring(7).trim()
   }
-  return (req.query.token as string) || null
+  return null
+}
+
+function rejectInvalidInput(req: Request, res: Response): boolean {
+  const errors = validationResult(req)
+  if (errors.isEmpty()) return false
+  res.status(400).json({
+    success: false,
+    error: 'Données invalides.',
+    code: 400,
+    details: errors.array().map(error => error.msg),
+  })
+  return true
 }
 
 /**
@@ -52,7 +65,13 @@ router.get('/status', (_req: Request, res: Response): void => {
  * POST /api/auth/register
  * Inscription d'un nouvel utilisateur
  */
-router.post('/register', async (req: Request, res: Response): Promise<void> => {
+router.post('/register', [
+  body('name').isString().trim().isLength({ min: 2, max: 80 }),
+  body('email').isEmail().normalizeEmail(),
+  body('password').isString().isLength({ min: 8, max: 128 }),
+  body('title').optional().isString().trim().isLength({ max: 120 }),
+], async (req: Request, res: Response): Promise<void> => {
+  if (rejectInvalidInput(req, res)) return
   try {
     const { name, email, password, title } = req.body
     const result = await registerUser({ name, email, password, title })
@@ -75,7 +94,11 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
  * POST /api/auth/login
  * Connexion d'un utilisateur existant
  */
-router.post('/login', async (req: Request, res: Response): Promise<void> => {
+router.post('/login', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isString().isLength({ min: 1, max: 128 }),
+], async (req: Request, res: Response): Promise<void> => {
+  if (rejectInvalidInput(req, res)) return
   try {
     const { email, password } = req.body
     const result = await loginUser(email, password)
@@ -135,7 +158,22 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
  * PUT /api/auth/profile
  * Met à jour le profil de l'utilisateur connecté
  */
-router.put('/profile', async (req: Request, res: Response): Promise<void> => {
+router.put('/profile', [
+  body('name').optional().isString().trim().isLength({ min: 2, max: 80 }),
+  body('title').optional().isString().trim().isLength({ max: 120 }),
+  body('avatarColor').optional().isHexColor(),
+  body('favorites').optional().isObject(),
+  body('favorites.clubs').optional().isArray({ max: 100 }),
+  body('favorites.clubs.*').optional().isString().trim().isLength({ max: 100 }),
+  body('favorites.leagues').optional().isArray({ max: 50 }),
+  body('favorites.leagues.*').optional().isString().trim().isLength({ max: 100 }),
+  body('settings').optional().isObject(),
+  body('settings.oddsFormat').optional().isIn(['decimal', 'fractional', 'american']),
+  body('settings.currency').optional().isIn(['EUR', 'USD', 'GBP', 'XOF']),
+  body('settings.minConfidence').optional().isInt({ min: 0, max: 100 }).toInt(),
+  body('settings.theme').optional().isIn(['dark', 'light']),
+], async (req: Request, res: Response): Promise<void> => {
+  if (rejectInvalidInput(req, res)) return
   try {
     const token = extractToken(req)
     if (!token) {
@@ -202,7 +240,18 @@ router.get('/notebook', async (req: Request, res: Response): Promise<void> => {
  * POST /api/auth/notebook
  * Ajoute un pari au carnet personnel de l'utilisateur (enregistré dans PostgreSQL)
  */
-router.post('/notebook', async (req: Request, res: Response): Promise<void> => {
+router.post('/notebook', [
+  body('matchId').optional().isInt({ min: 1 }).toInt(),
+  body('matchName').isString().trim().isLength({ min: 2, max: 160 }),
+  body('league').optional().isString().trim().isLength({ max: 80 }),
+  body('pick').isString().trim().isLength({ min: 1, max: 80 }),
+  body('odds').isFloat({ min: 1.01, max: 1000 }).toFloat(),
+  body('stake').isFloat({ min: 0.01, max: 100000 }).toFloat(),
+  body('result').optional().isIn(['win', 'loss', 'pending', 'void']),
+  body('profit').optional().isFloat({ min: -100000, max: 100000 }).toFloat(),
+  body('date').isISO8601(),
+], async (req: Request, res: Response): Promise<void> => {
+  if (rejectInvalidInput(req, res)) return
   try {
     const token = extractToken(req)
     if (!token) {
@@ -231,7 +280,10 @@ router.post('/notebook', async (req: Request, res: Response): Promise<void> => {
  * DELETE /api/auth/notebook/:id
  * Supprime un pari du carnet
  */
-router.delete('/notebook/:id', async (req: Request, res: Response): Promise<void> => {
+router.delete('/notebook/:id', [
+  param('id').isInt({ min: 1 }).toInt(),
+], async (req: Request, res: Response): Promise<void> => {
+  if (rejectInvalidInput(req, res)) return
   try {
     const token = extractToken(req)
     if (!token) {
@@ -261,7 +313,10 @@ router.delete('/notebook/:id', async (req: Request, res: Response): Promise<void
  * POST /api/auth/google
  * Connexion / inscription via Google OAuth (ID Token envoyé depuis le frontend)
  */
-router.post('/google', async (req: Request, res: Response): Promise<void> => {
+router.post('/google', [
+  body('idToken').isString().trim().isLength({ min: 20, max: 10000 }),
+], async (req: Request, res: Response): Promise<void> => {
+  if (rejectInvalidInput(req, res)) return
   try {
     const { idToken } = req.body
     if (!idToken) {

@@ -3,6 +3,7 @@
 // ============================================================
 
 import { Router, Request, Response } from 'express'
+import { body, query, validationResult } from 'express-validator'
 import { getFullMatches } from '../services/matchService'
 import { getDailyCombinations, optimizeUserSelection } from '../services/aiPredictionService'
 import { getPredictionHistory } from '../services/historyService'
@@ -11,12 +12,22 @@ import { OptimizeRequest } from '../types'
 
 const router = Router()
 
+function hasValidationErrors(req: Request, res: Response): boolean {
+  const errors = validationResult(req)
+  if (errors.isEmpty()) return false
+  res.status(400).json({ success: false, error: 'Paramètres invalides.', code: 400 })
+  return true
+}
+
 /**
  * GET /api/predictions/history
  * Retourne l'historique des pronostics & combinés sur 14 jours avec statuts (Validé/Perdu) et bilan ROI
  * Query params: ?days=14 (par défaut 14)
  */
-router.get('/history', async (req: Request, res: Response): Promise<void> => {
+router.get('/history', [
+  query('days').optional().isInt({ min: 1, max: 90 }).toInt(),
+], async (req: Request, res: Response): Promise<void> => {
+  if (hasValidationErrors(req, res)) return
   try {
     const days = parseInt(req.query.days as string, 10) || 14
     const historyData = await getPredictionHistory(days)
@@ -42,6 +53,10 @@ router.get('/history', async (req: Request, res: Response): Promise<void> => {
  * Query params: ?refresh=true pour forcer la régénération
  */
 router.get('/combinations', async (req: Request, res: Response): Promise<void> => {
+  if (req.query.refresh !== undefined && !['true', 'false'].includes(String(req.query.refresh))) {
+    res.status(400).json({ success: false, error: 'Paramètre refresh invalide.', code: 400 })
+    return
+  }
   try {
     const forceRefresh = req.query.refresh === 'true'
     const matchData = await getFullMatches(forceRefresh)
@@ -77,7 +92,12 @@ router.get('/combinations', async (req: Request, res: Response): Promise<void> =
  * Optimise une liste de matchs sélectionnés par l'utilisateur
  * Body : { matchIds: number[], targetOdds?: number }
  */
-router.post('/optimize', async (req: Request, res: Response): Promise<void> => {
+router.post('/optimize', [
+  body('matchIds').isArray({ min: 1, max: 20 }),
+  body('matchIds.*').isInt({ min: 1 }).toInt(),
+  body('targetOdds').optional().isFloat({ min: 1.01, max: 100 }).toFloat(),
+], async (req: Request, res: Response): Promise<void> => {
+  if (hasValidationErrors(req, res)) return
   try {
     const { matchIds, targetOdds } = req.body as OptimizeRequest
 

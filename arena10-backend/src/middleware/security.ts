@@ -37,9 +37,7 @@ const allowedOrigins = [
   config.frontendUrl,
   'https://arena10.games',
   'https://www.arena10.games',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:5173',
+  ...(isDev ? ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'] : []),
 ]
 
 export const corsMiddleware = cors({
@@ -48,8 +46,7 @@ export const corsMiddleware = cors({
     if (!origin) return callback(null, true)
     
     if (
-      allowedOrigins.includes(origin) ||
-      (origin && (origin.endsWith('.vercel.app') || origin.endsWith('arena10.games') || origin.includes('onrender.com')))
+      allowedOrigins.includes(origin)
     ) {
       return callback(null, true)
     }

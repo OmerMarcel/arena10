@@ -7,8 +7,10 @@ import { ServerConfig } from '../types'
 
 dotenv.config()
 
+const nodeEnv = process.env.NODE_ENV || 'development'
+
 function requireEnv(key: string, fallback?: string): string {
-  const value = process.env[key] || fallback
+  const value = process.env[key] || (nodeEnv === 'production' ? undefined : fallback)
   if (!value) {
     throw new Error(
       `[CONFIG] Variable d'environnement manquante: ${key}\n` +
@@ -33,11 +35,15 @@ export const config: ServerConfig = {
   groqApiKey:      optionalEnv('GROQ_API_KEY', ''),
   cacheNewsttl:    parseInt(optionalEnv('CACHE_TTL_NEWS', '300'), 10),
   cacheMatchesTtl: parseInt(optionalEnv('CACHE_TTL_MATCHES', '120'), 10),
-  nodeEnv:         optionalEnv('NODE_ENV', 'development'),
+  nodeEnv,
   databaseUrl:     optionalEnv('DATABASE_URL', ''),
   redisUrl:        optionalEnv('REDIS_URL', ''),
 }
 
 export const isDev = config.nodeEnv === 'development'
 export const isProd = config.nodeEnv === 'production'
+
+if (isProd && config.internalApiKey.length < 32) {
+  throw new Error('[CONFIG] INTERNAL_API_KEY doit contenir au moins 32 caractères en production.')
+}
 
