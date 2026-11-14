@@ -3,8 +3,9 @@
 // Connecte le frontend React au backend Express (port 4000)
 // ============================================================
 
-// URL de base de l'API — peut être surchargée via la variable d'environnement Vite
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+// URL de base de l'API — accepte une URL Render avec ou sans le préfixe /api.
+const configuredApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/+$/, '')
+const API_BASE = configuredApiUrl.endsWith('/api') ? configuredApiUrl : `${configuredApiUrl}/api`
 
 // ── INTERFACES TYPESCRIPT ─────────────────────────────────────
 
