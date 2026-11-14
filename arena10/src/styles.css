@@ -5801,3 +5801,253 @@ footer a { color: #8797ac; }
     grid-column: 1 / -1;
   }
 }
+
+/* ══ MOBILE FINAL : LAYOUT, LISIBILITÉ & ZONES TACTILES ══ */
+@media (max-width: 768px) {
+  .topbar {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .content {
+    width: 100%;
+    max-width: 100%;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    overflow: hidden;
+  }
+
+  .content-layout-with-ads,
+  .content-page-body,
+  .hero-v2,
+  .featured-grid,
+  .news-flash,
+  .news-grid,
+  .schedule-layout {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .crumb {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .top-actions {
+    flex-shrink: 0;
+  }
+
+  .icon-btn,
+  .menu-btn,
+  .primary-btn,
+  .filter-btn,
+  .select-match,
+  .more-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .hero-v2 {
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 28px;
+  }
+
+  .hero-left p {
+    max-width: 34rem;
+  }
+
+  .hero-actions,
+  .hero-stats {
+    justify-content: center;
+  }
+
+  .hero-right {
+    overflow: hidden;
+  }
+
+  .featured-grid,
+  .news-flash,
+  .news-grid,
+  .metrics,
+  .perf-kpis,
+  .month-stats,
+  .algo-stats,
+  .pron-stats-grid,
+  .nb-summary,
+  .history-summary,
+  .cmp-extra {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .featured-card,
+  .news-card,
+  .news-article,
+  .match-card,
+  .ad-card,
+  .perf-chart-section,
+  .perf-section,
+  .perf-reco,
+  .sim-card {
+    min-width: 0;
+  }
+
+  .team b,
+  .news-card b,
+  .news-article-body h3,
+  .featured-card h3 {
+    overflow-wrap: anywhere;
+  }
+
+  .right-ad-rail {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .mobile-top-ad-banner {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .global-3d-bg-container {
+    opacity: 0.12 !important;
+  }
+
+  .global-3d-ring,
+  .global-3d-number,
+  .global-3d-halo {
+    display: none;
+  }
+
+  .global-3d-player-stage {
+    justify-content: center;
+    transform: translateY(3%) scale(0.72);
+    transform-origin: center center;
+    opacity: 0.28;
+  }
+
+  .global-3d-controls {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  footer {
+    padding-bottom: max(25px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 519px) {
+  .page-header h2 {
+    font-size: clamp(30px, 10vw, 40px);
+  }
+
+  .hero-left h1 {
+    max-width: 100%;
+    font-size: clamp(32px, 10vw, 38px);
+    overflow-wrap: anywhere;
+  }
+
+  .hero-stats {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .hero-stats div {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .hero-stats span {
+    line-height: 1.3;
+  }
+
+  .featured-grid,
+  .news-flash,
+  .news-grid,
+  .metrics,
+  .cmp-extra {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .perf-kpis,
+  .month-stats,
+  .algo-stats,
+  .pron-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .schedule-toolbar,
+  .match-list,
+  .news-featured,
+  .sim-card,
+  .perf-chart-section,
+  .perf-section,
+  .perf-reco {
+    border-radius: 6px;
+  }
+
+  .news-featured-content h2 {
+    font-size: clamp(22px, 7vw, 28px);
+  }
+
+  .favorites-tabs,
+  .notebook-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .match-modal {
+    width: calc(100% - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .topbar {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .crumb {
+    font-size: 8px;
+    letter-spacing: 0.8px;
+  }
+
+  .top-actions {
+    gap: 6px;
+  }
+
+  .hero-left h1 {
+    font-size: 30px;
+  }
+
+  .hero-stats b {
+    font-size: 17px;
+  }
+
+  .perf-kpis,
+  .month-stats,
+  .algo-stats,
+  .pron-stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .api-status-banner {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
