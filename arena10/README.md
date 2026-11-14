@@ -20,6 +20,40 @@ npm run build
 npm run preview
 ```
 
+## Déploiement production
+
+### Frontend Vercel
+
+Dans Vercel, sélectionnez le dossier `arena10` comme **Root Directory** :
+
+- Build command : `npm run build`
+- Output directory : `dist`
+- Install command : `npm ci`
+- `VITE_API_URL` : `https://arena10-backend.onrender.com/api`
+- `VITE_GOOGLE_CLIENT_ID` : votre client ID Google OAuth
+
+Les variables `VITE_*` sont intégrées au bundle public : ne jamais y placer de secret.
+
+### Backend Render
+
+Le fichier `render.yaml` à la racine du dépôt décrit le service Render. Si le service existe déjà, conservez :
+
+- Root directory : `arena10-backend`
+- Build command : `npm ci && npm run build`
+- Start command : `npm start`
+- Health check : `/api/health`
+
+Variables obligatoires en production :
+
+- `NODE_ENV=production`
+- `FRONTEND_URL=https://www.arena10.games`
+- `INTERNAL_API_KEY` (clé aléatoire d’au moins 32 caractères)
+- `DATABASE_URL`
+- `REDIS_URL`
+- `GOOGLE_CLIENT_ID`
+
+Ajoutez `NEWS_API_KEY`, `RAPID_API_KEY`, `GEMINI_API_KEY` et `GROQ_API_KEY` selon les fonctionnalités activées. Les secrets doivent être saisis dans Vercel/Render, jamais dans Git.
+
 ---
 
 ## ✨ Nouveautés & Fonctionnalités Version 2
